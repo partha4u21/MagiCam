@@ -10,7 +10,6 @@ import android.util.Pair;
 import android.view.MotionEvent;
 
 import com.magilic.opencamera.cameracontroller.CameraController;
-import com.magilic.opencamera.cameracontroller.RawImage;
 
 /** A partial implementation of ApplicationInterface that provides "default" implementations. So
  *  sub-classing this is easier than implementing ApplicationInterface directly - you only have to
@@ -220,7 +219,7 @@ public abstract class BasicApplicationInterface implements ApplicationInterface 
 
     @Override
     public boolean getShutterSoundPref() {
-        return true;
+        return false;
     }
 
     @Override
@@ -619,21 +618,6 @@ public abstract class BasicApplicationInterface implements ApplicationInterface 
     @Override
     public void onDrawPreview(Canvas canvas) {
 
-    }
-
-    @Override
-    public boolean onBurstPictureTaken(List<byte[]> images, Date current_date) {
-        return false;
-    }
-
-    @Override
-    public boolean onRawPictureTaken(RawImage raw_image, Date current_date) {
-        return false;
-    }
-
-    @Override
-    public boolean onRawBurstPictureTaken(List<RawImage> raw_images, Date current_date) {
-        return false;
     }
 
     @Override

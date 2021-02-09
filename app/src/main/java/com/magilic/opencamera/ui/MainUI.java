@@ -117,23 +117,6 @@ public class MainUI {
         }
     }
 
-    /**
-     * Similar view.setRotation(ui_rotation), but achieves this via an animation.
-     */
-    private void setViewRotation(View view, float ui_rotation) {
-        if (!view_rotate_animation) {
-            view.setRotation(ui_rotation);
-        }
-        float rotate_by = ui_rotation - view.getRotation();
-        if (rotate_by > 181.0f)
-            rotate_by -= 360.0f;
-        else if (rotate_by < -181.0f)
-            rotate_by += 360.0f;
-        // view.animate() modifies the view's rotation attribute, so it ends up equivalent to view.setRotation()
-        // we use rotationBy() instead of rotation(), so we get the minimal rotation for clockwise vs anti-clockwise
-        view.animate().rotationBy(rotate_by).setDuration(view_rotate_animation_duration).setInterpolator(new AccelerateDecelerateInterpolator()).start();
-    }
-
     public void layoutUI() {
         layoutUI(false);
     }
@@ -276,7 +259,6 @@ public class MainUI {
             layoutParams.addRule(iconpanel_left_of, 0);
             layoutParams.addRule(iconpanel_right_of, 0);
             view.setLayoutParams(layoutParams);
-            setViewRotation(view, ui_rotation);
             View previous_view = view;
 
             List<View> buttons_permanent = new ArrayList<>();
@@ -294,7 +276,6 @@ public class MainUI {
                 layoutParams.addRule(right_of, 0);
                 layoutParams.setMargins(0, 0, navigation_gap, 0);
                 view.setLayoutParams(layoutParams);
-                setViewRotation(view, ui_rotation);
             } else {
                 buttons_permanent.add(main_activity.findViewById(R.id.gallery));
             }
@@ -318,7 +299,6 @@ public class MainUI {
                 layoutParams.addRule(iconpanel_left_of, previous_view.getId());
                 layoutParams.addRule(iconpanel_right_of, 0);
                 this_view.setLayoutParams(layoutParams);
-                setViewRotation(this_view, ui_rotation);
                 previous_view = this_view;
             }
 
@@ -412,7 +392,6 @@ public class MainUI {
             layoutParams.addRule(align_parent_right, RelativeLayout.TRUE);
             layoutParams.setMargins(0, 0, navigation_gap, 0);
             view.setLayoutParams(layoutParams);
-            setViewRotation(view, ui_rotation);
 
             view = main_activity.findViewById(R.id.switch_camera);
             layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
@@ -420,12 +399,7 @@ public class MainUI {
             layoutParams.addRule(align_parent_right, RelativeLayout.TRUE);
             layoutParams.setMargins(0, 0, navigation_gap, 0);
             view.setLayoutParams(layoutParams);
-            setViewRotation(view, ui_rotation);
 
-            view = main_activity.findViewById(R.id.switch_multi_camera);
-            layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
-            view.setLayoutParams(layoutParams);
-            setViewRotation(view, ui_rotation);
 
             view = main_activity.findViewById(R.id.pause_video);
             layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
@@ -433,7 +407,6 @@ public class MainUI {
             layoutParams.addRule(align_parent_right, RelativeLayout.TRUE);
             layoutParams.setMargins(0, 0, navigation_gap, 0);
             view.setLayoutParams(layoutParams);
-            setViewRotation(view, ui_rotation);
 
             view = main_activity.findViewById(R.id.switch_video);
             layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
@@ -441,14 +414,12 @@ public class MainUI {
             layoutParams.addRule(align_parent_right, RelativeLayout.TRUE);
             layoutParams.setMargins(0, 0, navigation_gap, 0);
             view.setLayoutParams(layoutParams);
-            setViewRotation(view, ui_rotation);
 
             layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
             layoutParams.addRule(align_parent_left, 0);
             layoutParams.addRule(align_parent_right, RelativeLayout.TRUE);
             layoutParams.setMargins(0, 0, navigation_gap, 0);
             view.setLayoutParams(layoutParams);
-            setViewRotation(view, ui_rotation);
 
             layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
             layoutParams.addRule(align_parent_left, 0);
@@ -527,7 +498,6 @@ public class MainUI {
             int height_pixels = (int) (height_dp * scale + 0.5f); // convert dps to pixels
 
             View view = main_activity.findViewById(R.id.sliders_container);
-            setViewRotation(view, ui_rotation);
             view.setTranslationX(0.0f);
             view.setTranslationY(0.0f);
 
@@ -684,8 +654,6 @@ public class MainUI {
         if (MyDebug.LOG)
             Log.d(TAG, "setPopupViewRotation");
         View view = main_activity.findViewById(R.id.popup_container);
-        setViewRotation(view, ui_rotation);
-        // reset:
         view.setTranslationX(0.0f);
         view.setTranslationY(0.0f);
 
@@ -897,50 +865,6 @@ public class MainUI {
         }
     }
 
-    public boolean showExposureLockIcon() {
-        if (!main_activity.getPreview().supportsExposureLock())
-            return false;
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(main_activity);
-        return sharedPreferences.getBoolean(PreferenceKeys.ShowExposureLockPreferenceKey, true);
-    }
-
-    public boolean showWhiteBalanceLockIcon() {
-        if (!main_activity.getPreview().supportsWhiteBalanceLock())
-            return false;
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(main_activity);
-        return sharedPreferences.getBoolean(PreferenceKeys.ShowWhiteBalanceLockPreferenceKey, false);
-    }
-
-    public boolean showCycleRawIcon() {
-        if (!main_activity.getPreview().supportsRaw())
-            return false;
-        if (!main_activity.getApplicationInterface().isRawAllowed(main_activity.getApplicationInterface().getPhotoMode()))
-            return false;
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(main_activity);
-        return sharedPreferences.getBoolean(PreferenceKeys.ShowCycleRawPreferenceKey, false);
-    }
-
-    public boolean showStoreLocationIcon() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(main_activity);
-        return sharedPreferences.getBoolean(PreferenceKeys.ShowStoreLocationPreferenceKey, false);
-    }
-
-    public boolean showTextStampIcon() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(main_activity);
-        return sharedPreferences.getBoolean(PreferenceKeys.ShowTextStampPreferenceKey, false);
-    }
-
-    public boolean showStampIcon() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(main_activity);
-        return sharedPreferences.getBoolean(PreferenceKeys.ShowStampPreferenceKey, false);
-    }
-
-    public boolean showAutoLevelIcon() {
-        if (!main_activity.supportsAutoStabilise())
-            return false;
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(main_activity);
-        return sharedPreferences.getBoolean(PreferenceKeys.ShowAutoLevelPreferenceKey, false);
-    }
 
     public boolean showCycleFlashIcon() {
         if (!main_activity.getPreview().supportsFlash())
@@ -949,13 +873,6 @@ public class MainUI {
             return false; // no point showing flash icon in video mode, as we only allow flash auto and flash torch, and we don't support torch on the on-screen cycle flash icon
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(main_activity);
         return sharedPreferences.getBoolean(PreferenceKeys.ShowCycleFlashPreferenceKey, false);
-    }
-
-    public boolean showFaceDetectionIcon() {
-        if (!main_activity.getPreview().supportsFaceDetection())
-            return false;
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(main_activity);
-        return sharedPreferences.getBoolean(PreferenceKeys.ShowFaceDetectionPreferenceKey, false);
     }
 
     public void setImmersiveMode(final boolean immersive_mode) {
@@ -972,7 +889,6 @@ public class MainUI {
                     Log.d(TAG, "setImmersiveMode: set visibility: " + visibility);
                 // n.b., don't hide share and trash buttons, as they require immediate user input for us to continue
                 View switchCameraButton = main_activity.findViewById(R.id.switch_camera);
-                View switchMultiCameraButton = main_activity.findViewById(R.id.switch_multi_camera);
                 View switchVideoButton = main_activity.findViewById(R.id.switch_video);
                 View cycleFlashButton = main_activity.findViewById(R.id.cycle_flash);
                 View popupButton = main_activity.findViewById(R.id.popup);
@@ -981,8 +897,6 @@ public class MainUI {
                 View focusBracketingTargetSeekBar = main_activity.findViewById(R.id.focus_bracketing_target_seekbar);
                 if (main_activity.getPreview().getCameraControllerManager().getNumberOfCameras() > 1)
                     switchCameraButton.setVisibility(visibility);
-                if (main_activity.showSwitchMultiCamIcon())
-                    switchMultiCameraButton.setVisibility(visibility);
                 switchVideoButton.setVisibility(visibility);
                 if (showCycleFlashIcon())
                     cycleFlashButton.setVisibility(visibility);
@@ -1048,14 +962,11 @@ public class MainUI {
                 final int visibility = is_panorama_recording ? View.GONE : (show_gui_photo && show_gui_video) ? View.VISIBLE : View.GONE; // for UI that is hidden while taking photo or video
                 final int visibility_video = is_panorama_recording ? View.GONE : show_gui_photo ? View.VISIBLE : View.GONE; // for UI that is only hidden while taking photo
                 View switchCameraButton = main_activity.findViewById(R.id.switch_camera);
-                View switchMultiCameraButton = main_activity.findViewById(R.id.switch_multi_camera);
                 View switchVideoButton = main_activity.findViewById(R.id.switch_video);
                 View cycleFlashButton = main_activity.findViewById(R.id.cycle_flash);
                 View popupButton = main_activity.findViewById(R.id.popup);
                 if (main_activity.getPreview().getCameraControllerManager().getNumberOfCameras() > 1)
                     switchCameraButton.setVisibility(visibility);
-                if (main_activity.showSwitchMultiCamIcon())
-                    switchMultiCameraButton.setVisibility(visibility);
                 switchVideoButton.setVisibility(visibility);
                 if (showCycleFlashIcon())
                     cycleFlashButton.setVisibility(visibility);
@@ -1063,7 +974,6 @@ public class MainUI {
                 if (!(show_gui_photo && show_gui_video)) {
                     closePopup(); // we still allow the popup when recording video, but need to update the UI (so it only shows flash options), so easiest to just close
                 }
-
 
                 popupButton.setVisibility(main_activity.getPreview().supportsFlash() ? visibility_video : visibility); // still allow popup in order to change flash mode when recording video
 

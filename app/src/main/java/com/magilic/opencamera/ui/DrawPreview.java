@@ -64,7 +64,6 @@ public class DrawPreview {
     private MyApplicationInterface.PhotoMode photoMode;
     private boolean show_time_pref;
     private boolean show_camera_id_pref;
-    private boolean show_free_memory_pref;
     private boolean show_iso_pref;
     private boolean show_video_max_amp_pref;
     private boolean show_zoom_pref;
@@ -521,7 +520,6 @@ public class DrawPreview {
         if( MyDebug.LOG )
             Log.d(TAG, "photoMode: " + photoMode);
 
-        show_time_pref = sharedPreferences.getBoolean(PreferenceKeys.ShowTimePreferenceKey, true);
         // reset in case user changes the preference:
         dateFormatTimeInstance = DateFormat.getTimeInstance();
         current_time_string = null;
@@ -530,11 +528,9 @@ public class DrawPreview {
 
         show_camera_id_pref = main_activity.isMultiCam() && sharedPreferences.getBoolean(PreferenceKeys.ShowCameraIDPreferenceKey, true);
         //show_camera_id_pref = true; // test
-        show_free_memory_pref = sharedPreferences.getBoolean(PreferenceKeys.ShowFreeMemoryPreferenceKey, true);
         show_iso_pref = sharedPreferences.getBoolean(PreferenceKeys.ShowISOPreferenceKey, true);
         show_video_max_amp_pref = sharedPreferences.getBoolean(PreferenceKeys.ShowVideoMaxAmpPreferenceKey, false);
         show_zoom_pref = sharedPreferences.getBoolean(PreferenceKeys.ShowZoomPreferenceKey, true);
-        show_battery_pref = sharedPreferences.getBoolean(PreferenceKeys.ShowBatteryPreferenceKey, true);
 
         show_angle_pref = sharedPreferences.getBoolean(PreferenceKeys.ShowAnglePreferenceKey, false);
         String angle_highlight_color = sharedPreferences.getString(PreferenceKeys.ShowAngleHighlightColorPreferenceKey, "#14e715");
@@ -754,7 +750,6 @@ public class DrawPreview {
 
         // now need to take exif orientation into account, as some devices or camera apps store the orientation in the exif tag,
         // which getBitmap() doesn't account for
-        bitmap = main_activity.rotateForExif(bitmap, uri);
 
         return bitmap;
     }
@@ -1051,44 +1046,6 @@ public class DrawPreview {
 
         int first_line_height = 0;
         int first_line_xshift = 0;
-        if( show_time_pref ) {
-            if( current_time_string == null || time_ms/1000 > last_current_time_time/1000 ) {
-                // avoid creating a new calendar object every time
-                if( calendar == null )
-                    calendar = Calendar.getInstance();
-                else
-                    calendar.setTimeInMillis(time_ms);
-
-                current_time_string = dateFormatTimeInstance.format(calendar.getTime());
-                //current_time_string = DateUtils.formatDateTime(getContext(), c.getTimeInMillis(), DateUtils.FORMAT_SHOW_TIME);
-                last_current_time_time = time_ms;
-            }
-            // n.b., DateFormat.getTimeInstance() ignores user preferences such as 12/24 hour or date format, but this is an Android bug.
-            // Whilst DateUtils.formatDateTime doesn't have that problem, it doesn't print out seconds! See:
-            // http://stackoverflow.com/questions/15981516/simpledateformat-gettimeinstance-ignores-24-hour-format
-            // http://daniel-codes.blogspot.co.uk/2013/06/how-to-correctly-format-datetime.html
-            // http://code.google.com/p/android/issues/detail?id=42104
-            // update: now seems to be fixed
-            // also possibly related https://code.google.com/p/android/issues/detail?id=181201
-            //int height = applicationInterface.drawTextWithBackground(canvas, p, current_time_string, Color.WHITE, Color.BLACK, location_x, location_y, MyApplicationInterface.Alignment.ALIGNMENT_TOP);
-            if( text_bounds_time == null ) {
-                if( MyDebug.LOG )
-                    Log.d(TAG, "compute text_bounds_time");
-                text_bounds_time = new Rect();
-                // better to not use a fixed string like "00:00:00" as don't want to make assumptions - e.g., in 12 hour format we'll have the appended am/pm to account for!
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(100, 0, 1, 10, 59, 59);
-                String bounds_time_string = dateFormatTimeInstance.format(calendar.getTime());
-                if( MyDebug.LOG )
-                    Log.d(TAG, "bounds_time_string:" + bounds_time_string);
-                p.getTextBounds(bounds_time_string, 0, bounds_time_string.length(), text_bounds_time);
-            }
-            first_line_xshift += text_bounds_time.width() + gap_x;
-            int height = applicationInterface.drawTextWithBackground(canvas, p, current_time_string, Color.WHITE, Color.BLACK, location_x, location_y, MyApplicationInterface.Alignment.ALIGNMENT_TOP, null, MyApplicationInterface.Shadow.SHADOW_OUTLINE, text_bounds_time);
-            height += gap_y;
-            // don't update location_y yet, as we have time and cameraid shown on the same line
-            first_line_height = Math.max(first_line_height, height);
-        }
         if( show_camera_id_pref && camera_controller != null ) {
             if( camera_id_string == null || time_ms > last_camera_id_time + 10000 ) {
                 // cache string for performance
@@ -1115,42 +1072,6 @@ public class DrawPreview {
         }
         else {
             location_y += first_line_height;
-        }
-
-        if( camera_controller != null && show_free_memory_pref ) {
-            if( last_free_memory_time == 0 || time_ms > last_free_memory_time + 10000 ) {
-                // don't call this too often, for UI performance
-                long free_mb = main_activity.getStorageUtils().freeMemory();
-                if( free_mb >= 0 ) {
-                    float new_free_memory_gb = free_mb/1024.0f;
-                    if( MyDebug.LOG ) {
-                        Log.d(TAG, "free_memory_gb: " + free_memory_gb);
-                        Log.d(TAG, "new_free_memory_gb: " + new_free_memory_gb);
-                    }
-                    if( Math.abs(new_free_memory_gb - free_memory_gb) > 0.001f ) {
-                        free_memory_gb = new_free_memory_gb;
-                        free_memory_gb_string = decimalFormat.format(free_memory_gb) + getContext().getResources().getString(R.string.gb_abbreviation);
-                    }
-                }
-                last_free_memory_time = time_ms; // always set this, so that in case of free memory not being available, we aren't calling freeMemory() every frame
-            }
-            if( free_memory_gb >= 0.0f && free_memory_gb_string != null ) {
-                //int height = applicationInterface.drawTextWithBackground(canvas, p, free_memory_gb_string, Color.WHITE, Color.BLACK, location_x, location_y, MyApplicationInterface.Alignment.ALIGNMENT_TOP);
-                if( text_bounds_free_memory == null ) {
-                    if( MyDebug.LOG )
-                        Log.d(TAG, "compute text_bounds_free_memory");
-                    text_bounds_free_memory = new Rect();
-                    p.getTextBounds(free_memory_gb_string, 0, free_memory_gb_string.length(), text_bounds_free_memory);
-                }
-                int height = applicationInterface.drawTextWithBackground(canvas, p, free_memory_gb_string, Color.WHITE, Color.BLACK, location_x, location_y, MyApplicationInterface.Alignment.ALIGNMENT_TOP, null, MyApplicationInterface.Shadow.SHADOW_OUTLINE, text_bounds_free_memory);
-                height += gap_y;
-                if( ui_rotation == 90 ) {
-                    location_y -= height;
-                }
-                else {
-                    location_y += height;
-                }
-            }
         }
 
         // Now draw additional info on the lower left corner if needed

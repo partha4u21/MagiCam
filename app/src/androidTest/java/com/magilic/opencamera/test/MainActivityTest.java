@@ -1,7 +1,6 @@
 package com.magilic.opencamera.test;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -17,8 +16,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import com.magilic.opencamera.LocationSupplier;
-import com.magilic.opencamera.MyPreferenceFragment;
-import com.magilic.opencamera.PanoramaProcessorException;
 import com.magilic.opencamera.cameracontroller.CameraController2;
 import com.magilic.opencamera.HDRProcessor;
 import com.magilic.opencamera.HDRProcessorException;

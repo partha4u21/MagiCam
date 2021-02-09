@@ -317,7 +317,6 @@ public class PermissionHandler {
                     // contacts-related task you need to do.
                     if( MyDebug.LOG )
                         Log.d(TAG, "location permission granted");
-                    main_activity.initLocation();
                 }
                 else {
                     if( MyDebug.LOG )

@@ -68,7 +68,6 @@ import android.speech.tts.TextToSpeech;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import androidx.exifinterface.media.ExifInterface;
 
 import android.text.InputFilter;
 import android.text.InputType;
@@ -1327,7 +1326,6 @@ public class MainActivity extends Activity {
 
         // if BLE remote control is enabled, then start the background BLE service
 
-        initLocation();
         initGyroSensors();
         applicationInterface.getImageSaver().onResume();
         soundPoolManager.initSound();
@@ -1548,7 +1546,6 @@ public class MainActivity extends Activity {
         editor.apply();
 
         applicationInterface.getDrawPreview().updateSettings(); // because we cache the geotagging setting
-        initLocation(); // required to enable or disable GPS, also requests permission if necessary
         this.closePopup();
 
         String message = getResources().getString(R.string.preference_location) + ": " + getResources().getString(value ? R.string.on : R.string.off);
@@ -1758,14 +1755,11 @@ public class MainActivity extends Activity {
         if (MyDebug.LOG)
             Log.d(TAG, "userSwitchToCamera: " + cameraId);
         View switchCameraButton = findViewById(R.id.switch_camera);
-        View switchMultiCameraButton = findViewById(R.id.switch_multi_camera);
         // prevent slowdown if user repeatedly clicks:
         switchCameraButton.setEnabled(false);
-        switchMultiCameraButton.setEnabled(false);
         applicationInterface.reset(true);
         this.preview.setCamera(cameraId);
         switchCameraButton.setEnabled(true);
-        switchMultiCameraButton.setEnabled(true);
         // no need to call mainUI.setSwitchCameraContentDescription - this will be called from Preview.cameraSetup when the
         // new camera is opened
     }
@@ -2250,60 +2244,7 @@ public class MainActivity extends Activity {
             changed = changed || (button.getVisibility() != View.GONE);
             button.setVisibility(View.GONE);
         }
-
-        if (!showSwitchMultiCamIcon()) {
-            // also handle the multi-cam icon here, as this can change when switching between front/back cameras
-            // (e.g., if say a device only has multiple back cameras)
-            View button = findViewById(R.id.switch_multi_camera);
-            changed = changed || (button.getVisibility() != View.GONE);
-            button.setVisibility(View.GONE);
-        }
         return changed;
-    }
-
-    public MyPreferenceFragment getPreferenceFragment() {
-        return (MyPreferenceFragment) getFragmentManager().findFragmentByTag("PREFERENCE_FRAGMENT");
-    }
-
-    private boolean settingsIsOpen() {
-        return getPreferenceFragment() != null;
-    }
-
-    /**
-     * Call when the settings is going to be closed.
-     */
-    private void settingsClosing() {
-        if (MyDebug.LOG)
-            Log.d(TAG, "close settings");
-        setWindowFlagsForCamera();
-        showPreview(true);
-
-        preferencesListener.stopListening();
-
-        // Update the cached settings in DrawPreview
-        // Note that some GUI related settings won't trigger preferencesListener.anyChange(), so
-        // we always call this. Perhaps we could add more classifications to PreferencesListener
-        // to mark settings that need us to update DrawPreview but not call updateForSettings().
-        // However, DrawPreview.updateSettings() should be a quick function (the main point is
-        // to avoid reading the preferences in every single frame).
-        applicationInterface.getDrawPreview().updateSettings();
-
-        if (preferencesListener.anyChange()) {
-            mainUI.updateOnScreenIcons();
-        }
-
-        if (preferencesListener.anySignificantChange()) {
-            // don't need to update camera, as we now pause/resume camera when going to settings
-            updateForSettings(false);
-        } else {
-            if (MyDebug.LOG)
-                Log.d(TAG, "no need to call updateForSettings() for changes made to preferences");
-            if (preferencesListener.anyChange()) {
-                // however we should still destroy cached popup, in case UI settings need to be kept in
-                // sync (e.g., changing the Repeat Mode)
-                mainUI.destroyPopup();
-            }
-        }
     }
 
     @Override
@@ -2314,9 +2255,7 @@ public class MainActivity extends Activity {
             preview.showToast(screen_locked_toast, R.string.screen_is_locked);
             return;
         }
-        if (settingsIsOpen()) {
-            settingsClosing();
-        } else if (preview != null && preview.isPreviewPaused()) {
+        if (preview != null && preview.isPreviewPaused()) {
             if (MyDebug.LOG)
                 Log.d(TAG, "preview was paused, so unpause it");
             preview.startCameraPreview();
@@ -2473,7 +2412,6 @@ public class MainActivity extends Activity {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // force to landscape mode
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE); // testing for devices with unusual sensor orientation (e.g., Nexus 5X)
         if (preview != null) {
             // also need to call setCameraDisplayOrientation, as this handles if the user switched from portrait to reverse landscape whilst in settings/etc
@@ -2533,7 +2471,6 @@ public class MainActivity extends Activity {
             // but useful for error tracking - ideally we want to make sure that initLocation is never called when
             // app is paused. It can happen here because setWindowFlagsForCamera() is called from
             // onCreate()
-            initLocation();
 
             // Similarly only want to reopen the camera if no longer paused
             if (preview != null) {
@@ -2639,64 +2576,6 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * Rotates the supplied bitmap according to the orientation tag stored in the exif data. If no
-     * rotation is required, the input bitmap is returned. If rotation is required, the input
-     * bitmap is recycled.
-     *
-     * @param uri Uri containing the JPEG with Exif information to use.
-     */
-    public Bitmap rotateForExif(Bitmap bitmap, Uri uri) throws IOException {
-        ExifInterface exif;
-        InputStream inputStream = null;
-        try {
-            inputStream = this.getContentResolver().openInputStream(uri);
-            exif = new ExifInterface(inputStream);
-        } finally {
-            if (inputStream != null)
-                inputStream.close();
-        }
-
-        if (exif != null) {
-            int exif_orientation_s = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
-            boolean needs_tf = false;
-            int exif_orientation = 0;
-            // see http://jpegclub.org/exif_orientation.html
-            // and http://stackoverflow.com/questions/20478765/how-to-get-the-correct-orientation-of-the-image-selected-from-the-default-image
-            if (exif_orientation_s == ExifInterface.ORIENTATION_UNDEFINED || exif_orientation_s == ExifInterface.ORIENTATION_NORMAL) {
-                // leave unchanged
-            } else if (exif_orientation_s == ExifInterface.ORIENTATION_ROTATE_180) {
-                needs_tf = true;
-                exif_orientation = 180;
-            } else if (exif_orientation_s == ExifInterface.ORIENTATION_ROTATE_90) {
-                needs_tf = true;
-                exif_orientation = 90;
-            } else if (exif_orientation_s == ExifInterface.ORIENTATION_ROTATE_270) {
-                needs_tf = true;
-                exif_orientation = 270;
-            } else {
-                // just leave unchanged for now
-                if (MyDebug.LOG)
-                    Log.e(TAG, "    unsupported exif orientation: " + exif_orientation_s);
-            }
-            if (MyDebug.LOG)
-                Log.d(TAG, "    exif orientation: " + exif_orientation);
-
-            if (needs_tf) {
-                if (MyDebug.LOG)
-                    Log.d(TAG, "    need to rotate bitmap due to exif orientation tag");
-                Matrix m = new Matrix();
-                m.setRotate(exif_orientation, bitmap.getWidth() * 0.5f, bitmap.getHeight() * 0.5f);
-                Bitmap rotated_bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
-                if (rotated_bitmap != bitmap) {
-                    bitmap.recycle();
-                    bitmap = rotated_bitmap;
-                }
-            }
-        }
-        return bitmap;
-    }
-
-    /**
      * Loads a thumbnail from the supplied image uri (not videos). Note this loads from the bitmap
      * rather than reading from MediaStore. Therefore this works with SAF uris as well as
      * MediaStore uris, as well as allowing control over the resolution of the thumbnail.
@@ -2761,13 +2640,6 @@ public class MainActivity extends Activity {
                 Log.e(TAG, "decodeStream returned null bitmap for ghost image last");
             }
             is.close();
-
-            if (!mediastore) {
-                // When loading from a mediastore, the bitmap already seems to have the correct orientation.
-                // But when loading from a saf uri, we need to apply the rotation.
-                // E.g., test on Galaxy S10e with ghost image last image option, when using SAF, in portrait orientation, after pause/resume.
-                thumbnail = rotateForExif(thumbnail, uri);
-            }
         } catch (IOException e) {
             Log.e(TAG, "failed to load bitmap for ghost image last");
             e.printStackTrace();
@@ -4629,23 +4501,6 @@ public class MainActivity extends Activity {
         push_info_toast_text = null; // reset
     }
 
-    public void initLocation() {
-        if (MyDebug.LOG)
-            Log.d(TAG, "initLocation");
-        if (app_is_paused) {
-            Log.e(TAG, "initLocation: app is paused!");
-            // we shouldn't need this (as we only call initLocation() when active), but just in case we end up here after onPause...
-        } else if (camera_in_background) {
-            if (MyDebug.LOG)
-                Log.d(TAG, "initLocation: camera in background!");
-            // we will end up here if app is pause/resumed when camera in background (settings, dialog, etc)
-        } else if (!applicationInterface.getLocationSupplier().setupLocationListener()) {
-            if (MyDebug.LOG)
-                Log.d(TAG, "location permission not available, so request permission");
-            permissionHandler.requestLocationPermission();
-        }
-    }
-
     private void initGyroSensors() {
         if (MyDebug.LOG)
             Log.d(TAG, "initGyroSensors");
@@ -4706,10 +4561,6 @@ public class MainActivity extends Activity {
         } else {
             save_location_history.updateFolderHistory(getStorageUtils().getSaveLocation(), true);
         }
-    }
-
-    public boolean hasThumbnailAnimation() {
-        return this.applicationInterface.hasThumbnailAnimation();
     }
 
     public boolean testHasNotification() {

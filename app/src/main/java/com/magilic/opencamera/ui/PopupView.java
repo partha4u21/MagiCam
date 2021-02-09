@@ -317,35 +317,6 @@ public class PopupView extends LinearLayout {
                 });
             }
 
-            if( main_activity.supportsAutoStabilise() && !main_activity.getMainUI().showAutoLevelIcon() ) {
-                // don't show auto-stabilise checkbox on popup if there's an on-screen icon
-                CheckBox checkBox = new CheckBox(main_activity);
-                checkBox.setText(getResources().getString(R.string.preference_auto_stabilise));
-                checkBox.setTextSize(TypedValue.COMPLEX_UNIT_DIP, standard_text_size_dip);
-                checkBox.setTextColor(Color.WHITE);
-                {
-                    // align the checkbox a bit better
-                    LayoutParams params = new LayoutParams(
-                            LayoutParams.MATCH_PARENT,
-                            LayoutParams.MATCH_PARENT
-                    );
-                    final int left_padding = (int) (10 * scale + 0.5f); // convert dps to pixels
-                    params.setMargins(left_padding, 0, 0, 0);
-                    checkBox.setLayoutParams(params);
-                }
-
-                boolean auto_stabilise = sharedPreferences.getBoolean(PreferenceKeys.AutoStabilisePreferenceKey, false);
-                if( auto_stabilise )
-                    checkBox.setChecked(auto_stabilise);
-                checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged(CompoundButton buttonView,
-                                                 boolean isChecked) {
-                        main_activity.clickedAutoLevel();
-                    }
-                });
-
-                this.addView(checkBox);
-            }
             if( MyDebug.LOG )
                 Log.d(TAG, "PopupView time 8: " + (System.nanoTime() - debug_time));
 

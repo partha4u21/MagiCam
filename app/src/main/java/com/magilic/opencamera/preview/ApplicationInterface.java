@@ -15,7 +15,6 @@ import android.view.MotionEvent;
 
 import com.magilic.opencamera.MyDebug;
 import com.magilic.opencamera.cameracontroller.CameraController;
-import com.magilic.opencamera.cameracontroller.RawImage;
 
 /** Provides communication between the Preview and the rest of the application
  *  - so in theory one can drop the Preview/ (and CameraController/) classes
@@ -234,9 +233,6 @@ public interface ApplicationInterface {
     // callbacks
     void onDrawPreview(Canvas canvas);
     boolean onPictureTaken(byte [] data, Date current_date);
-    boolean onBurstPictureTaken(List<byte []> images, Date current_date);
-    boolean onRawPictureTaken(RawImage raw_image, Date current_date);
-    boolean onRawBurstPictureTaken(List<RawImage> raw_images, Date current_date);
     void onCaptureStarted(); // called immediately before we start capturing the picture
     void onPictureCompleted(); // called after all picture callbacks have been called and returned
     void onContinuousFocusMove(boolean start); // called when focusing starts/stop in continuous picture mode (in photo mode only)

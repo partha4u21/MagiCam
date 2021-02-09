@@ -1,6 +1,5 @@
 package com.magilic.opencamera.preview;
 
-import com.magilic.opencamera.cameracontroller.RawImage;
 //import com.magilic.opencamera.MainActivity;
 import com.magilic.opencamera.MyDebug;
 import com.magilic.opencamera.R;
@@ -1877,13 +1876,6 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
             }
             if( MyDebug.LOG )
                 Log.d(TAG, "set_flash_value_after_autofocus is now: " + set_flash_value_after_autofocus);
-        }
-
-        if( this.supports_raw && applicationInterface.getRawPref() != ApplicationInterface.RawPref.RAWPREF_JPEG_ONLY ) {
-            camera_controller.setRaw(true, applicationInterface.getMaxRawImages());
-        }
-        else {
-            camera_controller.setRaw(false, 0);
         }
 
         setupBurstMode();
@@ -5405,7 +5397,7 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
             boolean enable_sound = applicationInterface.getShutterSoundPref();
             if( MyDebug.LOG )
                 Log.d(TAG, "enable_sound? " + enable_sound);
-            camera_controller.enableShutterSound(enable_sound); // Camera2 API can disable video sound too
+            camera_controller.enableShutterSound(false); // Camera2 API can disable video sound too
 
             MediaRecorder local_video_recorder = new MediaRecorder();
             this.camera_controller.unlock();
@@ -6089,40 +6081,6 @@ public class Preview implements SurfaceHolder.Callback, TextureView.SurfaceTextu
                 }
                 else {
                     success = true;
-                }
-            }
-
-            public void onRawPictureTaken(RawImage raw_image) {
-                if( MyDebug.LOG )
-                    Log.d(TAG, "onRawPictureTaken");
-                initDate();
-                if( !applicationInterface.onRawPictureTaken(raw_image, current_date) ) {
-                    if( MyDebug.LOG )
-                        Log.e(TAG, "applicationInterface.onRawPictureTaken failed");
-                }
-            }
-
-            public void onBurstPictureTaken(List<byte[]> images) {
-                if( MyDebug.LOG )
-                    Log.d(TAG, "onBurstPictureTaken");
-                initDate();
-
-                success = true;
-                if( !applicationInterface.onBurstPictureTaken(images, current_date) ) {
-                    if( MyDebug.LOG )
-                        Log.e(TAG, "applicationInterface.onBurstPictureTaken failed");
-                    success = false;
-                }
-            }
-
-            public void onRawBurstPictureTaken(List<RawImage> raw_images) {
-                if( MyDebug.LOG )
-                    Log.d(TAG, "onRawBurstPictureTaken");
-                initDate();
-
-                if( !applicationInterface.onRawBurstPictureTaken(raw_images, current_date) ) {
-                    if( MyDebug.LOG )
-                        Log.e(TAG, "applicationInterface.onRawBurstPictureTaken failed");
                 }
             }
 

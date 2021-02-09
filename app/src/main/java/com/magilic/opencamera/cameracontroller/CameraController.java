@@ -89,7 +89,7 @@ public abstract class CameraController {
         public int min_exposure;
         public int max_exposure;
         public float exposure_step;
-        public boolean can_disable_shutter_sound;
+        public boolean can_disable_shutter_sound = true;
         public int tonemap_max_curve_points;
         public boolean supports_tonemap_curve;
         public boolean supports_expo_bracketing; // whether setBurstTye(BURSTTYPE_EXPO) can be used
@@ -238,23 +238,6 @@ public abstract class CameraController {
         void onStarted(); // called immediately before we start capturing the picture
         void onCompleted(); // called after all relevant on*PictureTaken() callbacks have been called and returned
         void onPictureTaken(byte[] data);
-        /** Only called if RAW is requested.
-         *  Caller should call raw_image.close() when done with the image.
-         */
-        void onRawPictureTaken(RawImage raw_image);
-        /** Only called if burst is requested.
-         */
-        void onBurstPictureTaken(List<byte[]> images);
-        /** Only called if burst is requested.
-         */
-        void onRawBurstPictureTaken(List<RawImage> raw_images);
-        /* This is called for flash_frontscreen_auto or flash_frontscreen_on mode to indicate the caller should light up the screen
-         * (for flash_frontscreen_auto it will only be called if the scene is considered dark enough to require the screen flash).
-         * The screen flash can be removed when or after onCompleted() is called.
-         */
-        /* This is called for when burst mode is BURSTTYPE_FOCUS or BURSTTYPE_CONTINUOUS, to ask whether it's safe to take
-         * n_raw extra RAW images and n_jpegs extra JPEG images, or whether to wait.
-         */
         boolean imageQueueWouldBlock(int n_raw, int n_jpegs);
         void onFrontScreenTurnOn();
     }
@@ -428,7 +411,6 @@ public abstract class CameraController {
      *                       - note, the exception will come from a CameraController2 callback, so can't be
      *                       caught by the callera).
      */
-    public abstract void setRaw(boolean want_raw, int max_raw_images);
 
     /** Request a capture session compatible with high speed frame rates.
      *  This should be called only when the preview is paused or not yet started.
