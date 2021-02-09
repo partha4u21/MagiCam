@@ -168,7 +168,7 @@
                 android:defaultValue="none"
                 />
 
-            <net.sourceforge.opencamera.ui.ArraySeekBarPreference
+            <com.magilic.opencamera.ui.ArraySeekBarPreference
                 android:key="preference_audio_noise_control_sensitivity"
                 android:title="@string/preference_audio_noise_control_sensitivity"
                 android:summary="@string/preference_audio_noise_control_sensitivity_summary"
@@ -176,61 +176,6 @@
                 android:entryValues="@array/preference_audio_noise_control_sensitivity_values"
                 android:defaultValue="0"
                 />
-
-            <!--  if we move this to another PreferenceScreen, we should update code for the findPreference() call -->
-            <PreferenceScreen
-                android:key="preference_screen_remote_control"
-                android:title="@string/preference_screen_remote_control"
-                android:icon="@drawable/ic_more_horiz_white_48dp"
-                android:persistent="false">
-
-                <SwitchPreference
-                    android:key="preference_enable_remote"
-                    android:title="@string/preference_enable_remote"
-                    android:summary="@string/preference_enable_remote_summary"
-                    android:defaultValue="false"
-                    />
-
-                <ListPreference
-                    android:key="preference_remote_type"
-                    android:title="@string/preference_remote_type"
-                    android:summary="%s"
-                    android:entries="@array/preference_remote_type_entries"
-                    android:entryValues="@array/preference_remote_type_values"
-                    android:defaultValue="preference_remote_type_kraken"
-                    android:dependency="preference_enable_remote"
-                    />
-
-                <PreferenceScreen
-                    android:key="preference_remote_device_name"
-                    android:title="@string/preference_select_remote"
-                    android:dependency="preference_enable_remote"
-                    >
-
-                    <intent
-                        android:targetPackage="net.sourceforge.opencamera"
-                        android:targetClass="net.sourceforge.opencamera.remotecontrol.DeviceScanner"
-                        />
-
-                </PreferenceScreen>
-
-                <SwitchPreference
-                    android:key="preference_remote_disconnect_screen_dim"
-                    android:title="@string/preference_remote_disconnect_screen_dim"
-                    android:summary="@string/preference_remote_disconnect_screen_dim_summary"
-                    android:defaultValue="false"
-                    android:dependency="preference_enable_remote"
-                    />
-
-                <SwitchPreference
-                    android:key="preference_water_type"
-                    android:title="@string/preference_water_type"
-                    android:summary="@string/preference_water_type_summary"
-                    android:defaultValue="true"
-                    android:dependency="preference_enable_remote"
-                    />
-
-            </PreferenceScreen>
 
             <ListPreference
                 android:key="preference_lock_orientation"
@@ -344,7 +289,7 @@
                 android:defaultValue="preference_ghost_image_off"
                 />
 
-            <net.sourceforge.opencamera.ui.ArraySeekBarPreference
+            <com.magilic.opencamera.ui.ArraySeekBarPreference
                 android:key="ghost_image_alpha"
                 android:title="@string/preference_ghost_image_alpha"
                 android:summary="@string/preference_ghost_image_alpha_summary"
@@ -742,7 +687,7 @@
                 android:icon="@drawable/ic_photo_size_select_large_white_48dp"
                 />
 
-            <net.sourceforge.opencamera.ui.ArraySeekBarPreference
+            <com.magilic.opencamera.ui.ArraySeekBarPreference
                 android:key="preference_quality"
                 android:title="@string/preference_quality"
                 android:summary="@string/preference_quality_summary"
@@ -963,7 +908,7 @@
                     android:defaultValue=""
                     />
 
-                <net.sourceforge.opencamera.ui.ArraySeekBarPreference
+                <com.magilic.opencamera.ui.ArraySeekBarPreference
                     android:key="preference_stamp_fontsize"
                     android:title="@string/preference_stamp_fontsize"
                     android:summary="@string/preference_stamp_fontsize_summary"
@@ -1076,7 +1021,7 @@
                 />
 
             <!--  if we move this to another PreferenceGroup, we should update code for the findPreference() call -->
-            <net.sourceforge.opencamera.ui.ArraySeekBarPreference
+            <com.magilic.opencamera.ui.ArraySeekBarPreference
                 android:key="preference_video_profile_gamma"
                 android:title="@string/preference_video_profile_gamma"
                 android:summary="@string/preference_video_profile_gamma_summary"

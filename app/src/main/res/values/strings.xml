@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Open Camera</string> <!-- shouldn't be translated, unless deemed appropriate e.g. alternative alphabets -->
+    <string name="app_name">MagiCam</string> <!-- shouldn't be translated, unless deemed appropriate e.g. alternative alphabets -->
     <string name="action_settings">Settings</string>
     <string name="action_popup">Popup settings</string>
     <string name="intro_ok">OK (This message won\'t show again)</string>
@@ -787,14 +787,8 @@
     <string name="photo_mode_panorama">Pano</string> <!-- keep short, as this shows in the popup menu; probably shouldn't be translated? -->
     <string name="photo_mode_panorama_full">Panorama</string>
 
-    <string name="preference_screen_remote_control">Bluetooth LE remote control…</string>
-    <string name="preference_enable_remote">Enable Bluetooth LE remote control</string>
-    <string name="preference_enable_remote_summary">Enable Bluetooth LE (BLE) remote control devices</string>
     <string name="preference_remote_type">Remote device type</string>
 
-    <string name="ble_not_supported">BLE not supported</string>
-    <string name="scan_ble">BLE Device Scan</string>
-    <string name="bluetooth_not_supported">Bluetooth not supported.</string>
     <string name="unknown_device">Unknown device</string>
     <string name="preference_remote_disconnect_screen_dim">Dim screen if remote disconnects</string>
     <string name="preference_remote_disconnect_screen_dim_summary">Hint: set default brightness to minimum level before starting Open Camera.</string>
@@ -861,9 +855,6 @@
     <string name="cycle_raw">Cycle RAW modes</string>
     <string name="preference_show_cycle_raw">Show RAW icon</string>
     <string name="preference_show_cycle_raw_summary">Whether to show an on-screen icon for cycling through the RAW modes</string>
-
-    <string name="bluetooth_current_remote">Current remote:</string>
-    <string name="bluetooth_scan">Scan</string>
 
     <string name="preference_stamp_style_shadowed">Shadowed text</string>
     <string name="preference_stamp_style_plain">Plain text</string>
@@ -997,7 +988,6 @@
         \nLocation permission is required for the optional geotagging features (for photos and videos,
         including stamp and subtitles options).
         When relevant option(s) are enabled, your device location will be stored in photo/video/subtitle files.
-        Location permission is also required to connect to Bluetooth remote control devices.
         \nSince Open Camera also uses operating system APIs, you should review relevant privacy policies
         such as for your device, manufacturer, operating system and/or Google accounts. For example:
         \n*The optional voice control option uses the Android speech recognition service. When enabled,
